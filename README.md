@@ -243,7 +243,7 @@ Glamour is a **commercial product** preparing for its first paying customers, so
 
 ## Contact
 
-**Sergej Stojanović**. Full-stack developer and 3rd-year Information Technologies student at the Faculty of Sciences (PMF), University of Novi Sad.
+**Sergej Stojanović**. Full-stack developer and 4th-year Information Technologies student at the Faculty of Sciences (PMF), University of Novi Sad.
 
 - GitHub: [@Excapex](https://github.com/Excapex)
 - LinkedIn: [sergej-stojanovic-4a875836a](https://www.linkedin.com/in/sergej-stojanovic-4a875836a/)
