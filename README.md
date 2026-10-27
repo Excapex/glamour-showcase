@@ -4,7 +4,7 @@
 
 **Booking and operations SaaS for salons. It refills cancelled slots and heads off no-shows automatically.**
 
-Multi-tenant · WhatsApp-native · Serbian & English · designed and built by one developer
+Multi-tenant · WhatsApp-native · Serbian & English · embeddable booking widget · built solo by one developer, now a two-person team
 
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5-6DB33F?logo=springboot&logoColor=white)
@@ -39,6 +39,7 @@ Small salons in Serbia and the wider region still take bookings through paper di
 | No-shows | **Attendance Protection**: every new booking gets an explainable risk score. Only risky bookings get a one-tap WhatsApp confirmation. Trusted regulars and first-time clients are never pestered. | Fewer no-shows, with revenue protected and measured |
 | Regulars drift away | **Win-Back**: learns each client's visit cadence and invites them back once they're overdue | Lapsed clients reactivated |
 | Booking friction | A branded public booking page per salon and **natural-language WhatsApp booking** ("šišanje prekosutra u 15h") | Clients can book 24/7 without an account |
+| Salons already have a website | **Embeddable booking widget**: a direct link, an iFrame snippet or an auto-resizing script, for the whole menu or one service, pasted into WordPress, Wix or any HTML block | Booking happens on the salon's own site |
 | Running the business | Calendar (day/week/month), CRM, services and per-staff pricing, staff hours and exceptions, analytics, PDF reports | One tool instead of five |
 
 Every automation reports its **outcome in money** ("30,000 RSD protected this month"), not just "messages sent."
@@ -58,6 +59,12 @@ Every automation reports its **outcome in money** ("30,000 RSD protected this mo
 | **Analytics**<br>![Analytics](screenshots/09-analytics.png) | **Waitlist that feeds slot recovery**<br>![Waitlist](screenshots/11-waitlist.png) |
 | **SUPERADMIN: provision a whole salon from one form**<br>![Tenant provisioning](screenshots/13-superadmin-tenant-provisioning.png) | **Integrations (WhatsApp, Stripe, Google Calendar)**<br>![Integrations](screenshots/12-settings-integrations.png) |
 | **Fully localized: Serbian UI**<br>![Serbian dashboard](screenshots/16-dashboard-serbian.png) | **Service menu with categories and staff assignment**<br>![Services](screenshots/15-services.png) |
+| **New: "Embed booking" on the service menu (whole salon or one service)**<br>![Embed entry](screenshots/19-services-embed-entry.png) | **Copy-paste embed code: link, iFrame or auto-resizing script**<br>![Embed code dialog](screenshots/20-embed-code-dialog.png) |
+
+<p align="center">
+  <img src="screenshots/21-embedded-widget-on-salon-site.png" width="820" alt="Glamour booking widget embedded on a fictional salon website" />
+  <br/><em>The widget pasted into a fictional salon website. The embed pre-selects the service (Balayage), so the client lands straight on choosing a stylist.</em>
+</p>
 
 <p align="center">
   <img src="screenshots/17-mobile-public-booking.png" width="260" alt="Mobile public booking: services" />
@@ -149,7 +156,7 @@ interface Guardrail {
 | **Backend** | Java 21, Spring Boot 3.5 (Web, Data JPA, Security, Validation, Actuator, Mail), Gradle |
 | **Database** | PostgreSQL 18, **Flyway-only** schema changes (Hibernate `validate`), GiST exclusion constraints, advisory locks |
 | **Frontend** | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, shadcn/ui (Radix), TanStack Query, Zustand, react-hook-form + Zod, Recharts |
-| **i18n** | next-intl (EN / SR, 1,117 keys each) + backend message bundles |
+| **i18n** | next-intl (EN / SR, 1,133 keys each) + backend message bundles |
 | **Messaging** | Meta WhatsApp Cloud API (interactive lists and buttons, templates), SMTP |
 | **AI** | OpenAI-compatible LLM as a *fallback* intent parser (strict JSON schema, per-tenant metered) |
 | **Integrations** | Stripe, Google Calendar (OAuth2), JasperReports (PDF) |
@@ -187,6 +194,11 @@ interface Guardrail {
 - A transactional **outbox** for WhatsApp with retries and exponential backoff. Usage is metered only after confirmed delivery.
 - Inbound webhooks are **HMAC-verified** and de-duplicated. Tenant integration credentials are **encrypted at rest (AES-256-GCM)**.
 
+**Embeddable booking widget**
+- Each salon (or a single service) gets a copy-paste embed: a direct link, a plain iFrame, or a script that creates the iFrame and resizes it to the content.
+- The booking page reports its height to the host page with `postMessage` (watched by a `ResizeObserver`), so the widget never shows a nested scrollbar.
+- A `?service=` parameter pre-selects the service and skips ahead in the flow; multi-location salons still pick a location first, without losing the pre-selected service.
+
 **Performance work, measured**
 - Appointment pagination uses a two-query pattern (page the IDs, then hydrate them) to avoid Hibernate's in-memory pagination trap. On 10k rows it was **~13× faster** at the SQL layer (~1.7 ms vs ~23 ms).
 - A k6 load script covers the public booking path, with p95 thresholds encoded.
@@ -211,7 +223,7 @@ interface Guardrail {
 | Database | 51 Flyway migrations (V1–V51) + 1 prod-only |
 | Frontend | 20 routes · 83 components · 23 data hooks · 2 languages |
 | Tests | 32 backend test classes (~250 test methods) · 7 frontend test/spec files (42 cases) |
-| Delivery | 110 commits · 10 branches · 9 PRs · 39 tracked issues |
+| Delivery | ~155 commits · 15 PRs · 57 tracked issues (as of Oct 2026) |
 
 ---
 
@@ -225,11 +237,13 @@ I designed and built Glamour **solo, end to end**, from zero to MVP:
 - **Frontend:** Next.js app, data layer, i18n, E2E tests.
 - **Infrastructure:** Docker, CI, migrations strategy, backups, production hardening and runbooks.
 
+**Now a two-person team.** In mid-2026 **Uroš Vasiljević** joined. We work through issues, branches and cross-reviewed pull requests: the reviewer is never the author, and the reviewer merges. Uroš covers UX polish, localization, documentation and frontend tests. He built the embeddable booking widget and repaired the automations-page test suite, and he is working on a dashboard light/dark theme and a staff-column calendar day view. I own infrastructure, security, the database and migrations, and I review his work. My recent work includes fixing the CI toolchain (npm 10 lockfile sync, the Postgres test profile), a local reproduction of the CI pipeline, and revoking issued JWTs when a password changes or an account is deactivated or deleted.
+
 ---
 
 ## Status
 
-**MVP-complete and pre-launch.** The core flow works end to end: a salon is provisioned, the owner configures services, staff and hours, a client books on the web or over WhatsApp, the booking appears on the calendar, and reminders and recovery run automatically. The remaining work is deployment, legal pages and onboarding the first beta salons. No new features are planned until then.
+**MVP-complete and pre-launch.** The core flow works end to end: a salon is provisioned, the owner configures services, staff and hours, a client books on the web or over WhatsApp, the booking appears on the calendar, and reminders and recovery run automatically. The remaining work is deployment (still in progress: there is no public deployment or live booking page yet), legal pages and onboarding the first beta salons. Since the MVP, work has gone mostly into hardening, CI and tests, plus one new feature: the embeddable booking widget.
 
 ---
 
